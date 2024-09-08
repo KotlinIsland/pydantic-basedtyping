@@ -1,0 +1,72 @@
+name: check
+
+on: push
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - python-version: "3.9"
+            usable-python-version: "3.9"
+          - python-version: "3.10"
+            usable-python-version: "3.10"
+          - python-version: "3.11"
+            usable-python-version: "3.11"
+          - python-version: "3.12"
+            usable-python-version: "3.12"
+          - python-version: "3.13"
+            usable-python-version: "3.13"
+    env:
+      # Configure a constant location for the uv cache
+      UV_CACHE_DIR: /tmp/.uv-cache
+      
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Restore px cache
+        uses: actions/cache@v4
+        with:
+          path: ./.pyprojectx
+          key: uv-${{ runner.os }}-${{ hashFiles('pw.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ hashFiles('pw.lock') }}
+            uv-${{ runner.os }}
+
+      - name: Restore uv cache
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.uv-cache
+          key: uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+          restore-keys: |
+            uv-${{ runner.os }}-${{ hashFiles('uv.lock') }}
+            uv-${{ runner.os }}
+
+      - name: Install the project
+        run: ./pw install
+
+      - name: Run tests
+        run: ./pw uv run pytest tests
+      - name: typecheck
+        run: ./pw uv run mypy
+      - name: lint
+        run: ./pw uv run ruff check --output-format github
+      - name: lint
+        run: ./pw uv run ruff format --check --diff
+
+      - name: set minimum deps
+        if: ${{ matrix.python-version != '3.13' }}  # no wheels
+        run: ./pw uv pip install pydantic==2.4.2
+      - name: Run tests
+        if: ${{ matrix.python-version != '3.13' }}  # no wheels
+        run: ./pw uv run pytest tests
+      - name: typecheck
+        if: ${{ matrix.python-version != '3.13' }}  # no wheels
+        run: ./pw uv run mypy
+
+      - name: Minimize uv cache
+        run: ./pw uv cache prune --ci

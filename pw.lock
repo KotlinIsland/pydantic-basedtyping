@@ -1,0 +1,4 @@
+[main]
+requirements = ["uv==0.4.24"]
+hash = "45210da832f9626829457a65e9e7c4d0"
+post-install = "uv sync && python -m pydantic_basedtyping install"
