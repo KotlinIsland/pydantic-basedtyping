@@ -1,0 +1,67 @@
+[project]
+name = "pydantic-basedtyping"
+version = "0.1.0"
+description = "todo"
+authors = [
+    {name = "KotlinIsland", email = "kotlinisland@users.noreply.github.com"},
+]
+dependencies = [
+    "basedtyping>=0.1.5",
+    "pydantic>=2.4.2,<3",
+]
+requires-python = ">=3.9"
+readme = "README.md"
+license = {text = "MIT"}
+
+[project.entry-points.pydantic]
+basedtyping = "pydantic_basedtyping:plugin"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.pyprojectx]
+main = "uv"
+
+[tool.pyprojectx.aliases]
+install = ["uv sync", "uv run python -m pydantic_basedtyping install"]
+
+[tool.uv]
+dev-dependencies = [
+    "basedmypy>=2.6.0",
+    "pytest>=8.3.3",
+    "ruff>=0.7.0",
+]
+
+[tool.mypy]
+plugins = ["pydantic.mypy"]
+files = ["src", "tests"]
+
+[tool.pydantic-mypy]
+init_forbid_extra = true
+init_typed = true
+
+[tool.ruff]
+target-version = "py39"
+src = ["src", "test"]
+unsafe-fixes = true
+preview = true
+
+[tool.ruff.lint]
+select = ["ALL"]
+ignore = ["D203", "D213", "ANN201", "PT013", "TCH002", "COM812", "ISC001", "CPY001", "D413", "PLW1514"]
+[tool.ruff.lint.per-file-ignores]
+# Don't care about a lot of things in tests
+"tests/**" = ["D", "S101", "PLC2701"]
+
+[tool.ruff.lint.pyupgrade]
+keep-runtime-typing = true
+
+[tool.ruff.lint.flake8-type-checking]
+runtime-evaluated-base-classes = [
+    "pydantic.BaseModel",
+]
+
+[tool.ruff.format]
+# Enable reformatting of code snippets in docstrings.
+docstring-code-format = true
