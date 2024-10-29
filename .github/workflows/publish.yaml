@@ -2,27 +2,27 @@ name: publish
 
 on:
   release:
+    types: [published]
 
 jobs:
-  check:
+  publish:
     runs-on: ubuntu-latest
 
     env:
       # Configure a constant location for the uv cache
       UV_CACHE_DIR: /tmp/.uv-cache
-      python_version: "3.13"
 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with:
-          python-version: $python_version
+          python-version: "3.13"
 
       - name: Restore px cache
         uses: actions/cache@v4
         with:
           path: .pyprojectx
-          key: uv-${{ runner.os }}-3_13-${{ hashFiles('pw.lock') }}
+          key: px-${{ runner.os }}-3_13-${{ hashFiles('pw.lock') }}
           restore-keys: |
             px-${{ runner.os }}-3_13-${{ hashFiles('pw.lock') }}
             px-${{ runner.os }}
